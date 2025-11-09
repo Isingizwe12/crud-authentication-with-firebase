@@ -3,17 +3,23 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Trash2, LogOut } from "lucide-react";
-import { auth, logoutUser } from "./lib/auth"   // import auth and logout
+import { auth, logoutUser } from "./lib/auth"; // import your auth functions
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { Task } from "./types/task";
 
 export default function HomePage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Low");
+
   const router = useRouter();
 
   // Listen for logged-in user
   useEffect(() => {
-    const loggedInUser = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserEmail(user.email);
       } else {
@@ -21,8 +27,25 @@ export default function HomePage() {
       }
     });
 
-    return () => loggedInUser();
+    return () => unsubscribe();
   }, [router]);
+
+  // Fetch tasks from API
+  useEffect(() => {
+    if (!userEmail) return; // wait until email is set
+
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch(`/api/tasks?userEmail=${userEmail}`);
+        const data = await res.json();
+        setTasks(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchTasks();
+  }, [userEmail]);
 
   const handleLogout = async () => {
     await logoutUser();
@@ -48,65 +71,62 @@ export default function HomePage() {
       </p>
 
       {/* Todo Input */}
-      <div className="w-full max-w-2xl bg-slate-800 p-4 rounded-xl shadow-lg flex items-center gap-3 mb-6">
+      <div className="w-full max-w-2xl bg-slate-800 p-4 rounded-xl shadow-lg flex flex-col gap-3 mb-6">
         <input
           type="text"
-          placeholder="Add a new task..."
+          placeholder="Task title..."
           className="flex-1 bg-transparent border border-slate-700 p-3 rounded-lg outline-none focus:border-blue-500"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
-        <button className="bg-blue-600 p-3 rounded-xl hover:bg-blue-700 transition">
-          <Plus size={20} />
+        <input
+          type="text"
+          placeholder="Task description..."
+          className="flex-1 bg-transparent border border-slate-700 p-3 rounded-lg outline-none focus:border-blue-500"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <select
+          className="bg-slate-700 text-white p-3 rounded-lg focus:outline-none"
+          value={priority}
+          onChange={(e) => setPriority(e.target.value as "Low" | "Medium" | "High")}
+        >
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <button className="bg-blue-600 p-3 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2">
+          <Plus size={20} /> Add Task
         </button>
       </div>
 
       {/* Todo Items */}
       <div className="w-full max-w-2xl space-y-4">
-        {/* Example Todo Item */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-800 p-4 rounded-xl flex justify-between items-center shadow"
-        >
-          <div className="flex items-center gap-3">
-            <input type="checkbox" className="accent-green-400 w-5 h-5" />
-            <div>
-              <h3 className="text-lg font-semibold">Finish React project</h3>
-              <p className="text-sm opacity-80">Complete all components and styling</p>
-              <p className="text-xs text-blue-400 mt-1">Priority: High</p>
+        {tasks.map((task) => (
+          <motion.div
+            key={task.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-slate-800 p-4 rounded-xl flex justify-between items-center shadow"
+          >
+            <div className="flex items-center gap-3">
+              <input type="checkbox" className="accent-green-400 w-5 h-5" checked={task.completed} readOnly />
+              <div>
+                <h3 className="text-lg font-semibold">{task.title}</h3>
+                <p className="text-sm opacity-80">{task.description}</p>
+                <p className="text-xs mt-1" style={{ color: task.priority === "High" ? "#3b82f6" : task.priority === "Medium" ? "#facc15" : "#10b981" }}>
+                  Priority: {task.priority}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-3 items-center">
-            <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm">
-              Edit
-            </button>
-            <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-sm flex items-center gap-1">
-              <Trash2 size={16} /> Delete
-            </button>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-800 p-4 rounded-xl flex justify-between items-center shadow"
-        >
-          <div className="flex items-center gap-3">
-            <input type="checkbox" className="accent-green-400 w-5 h-5" />
-            <div>
-              <h3 className="text-lg font-semibold">Read documentation</h3>
-              <p className="text-sm opacity-80">Review all Firebase integration steps</p>
-              <p className="text-xs text-yellow-400 mt-1">Priority: Medium</p>
+            <div className="flex gap-3 items-center">
+              <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm">Edit</button>
+              <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-sm flex items-center gap-1">
+                <Trash2 size={16} /> Delete
+              </button>
             </div>
-          </div>
-          <div className="flex gap-3 items-center">
-            <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm">
-              Edit
-            </button>
-            <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-sm flex items-center gap-1">
-              <Trash2 size={16} /> Delete
-            </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
