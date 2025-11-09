@@ -32,7 +32,7 @@ export default function HomePage() {
 
   // Fetch tasks from API
   useEffect(() => {
-    if (!userEmail) return; // wait until email is set
+    if (!userEmail) return;
 
     const fetchTasks = async () => {
       try {
@@ -50,6 +50,28 @@ export default function HomePage() {
   const handleLogout = async () => {
     await logoutUser();
     router.push("/login");
+  };
+
+  const handleAddTask = async () => {
+    if (!title || !description || !priority || !userEmail) return;
+
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description, priority, userEmail }),
+      });
+
+      if (res.ok) {
+        const newTask = await res.json();
+        setTasks((prev) => [...prev, newTask]);
+        setTitle("");
+        setDescription("");
+        setPriority("Low");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -95,7 +117,10 @@ export default function HomePage() {
           <option value="Medium">Medium</option>
           <option value="High">High</option>
         </select>
-        <button className="bg-blue-600 p-3 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2">
+        <button
+          onClick={handleAddTask}
+          className="bg-blue-600 p-3 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2"
+        >
           <Plus size={20} /> Add Task
         </button>
       </div>
@@ -114,7 +139,15 @@ export default function HomePage() {
               <div>
                 <h3 className="text-lg font-semibold">{task.title}</h3>
                 <p className="text-sm opacity-80">{task.description}</p>
-                <p className="text-xs mt-1" style={{ color: task.priority === "High" ? "#3b82f6" : task.priority === "Medium" ? "#facc15" : "#10b981" }}>
+                <p
+                  className="text-xs mt-1"
+                  style={{
+                    color:
+                      task.priority === "High" ? "#3b82f6" :
+                      task.priority === "Medium" ? "#facc15" :
+                      "#10b981",
+                  }}
+                >
                   Priority: {task.priority}
                 </p>
               </div>
