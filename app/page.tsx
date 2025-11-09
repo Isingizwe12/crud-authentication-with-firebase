@@ -13,7 +13,7 @@ export default function HomePage() {
 
   // Listen for logged-in user
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const loggedInUser = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserEmail(user.email);
       } else {
@@ -21,7 +21,7 @@ export default function HomePage() {
       }
     });
 
-    return () => unsubscribe();
+    return () => loggedInUser();
   }, [router]);
 
   const handleLogout = async () => {
