@@ -31,3 +31,5 @@ export const logoutUser = async () => {
     return { error: error.message };
   }
 };
+export { auth };
+
