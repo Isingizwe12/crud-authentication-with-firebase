@@ -180,8 +180,10 @@ export default function HomePage() {
         Hello, {userEmail ? userEmail : "user"}
       </p>
 
-      {/* Todo Input */}
-      <div className="w-full max-w-2xl bg-slate-800 p-4 rounded-xl shadow-lg flex flex-col gap-3 mb-6">
+      {/* Grid Layout: Form Left, Tasks Right */}
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Todo Input - Left Side */}
+        <div className="bg-slate-800 p-4 rounded-xl shadow-lg flex flex-col gap-3 h-fit sticky top-6">
         <input
           type="text"
           placeholder="Task title..."
@@ -211,10 +213,10 @@ export default function HomePage() {
         >
           <Plus size={20} /> Add Task
         </button>
-      </div>
+        </div>
 
-      {/* Todo Items */}
-      <div className="w-full max-w-2xl space-y-4">
+        {/* Todo Items - Right Side */}
+        <div className="space-y-4">
         {tasks.map((task) => (
           <motion.div
             key={task.id}
@@ -308,7 +310,8 @@ export default function HomePage() {
               </div>
             )}
           </motion.div>
-        ))}
+                  ))}
+        </div>
       </div>
     </div>
   );
