@@ -174,3 +174,8 @@ npm install
 npm run dev
 
 Open http://localhost:3000
+
+# Testing Credentials 
+
+Email: isingizwealine@gmail.com
+Password: 123456789
