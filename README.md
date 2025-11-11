@@ -157,13 +157,13 @@ DELETE /api/tasks/:id
 ```
 
 ## Login Page
-![Login Page](./public/screenshots/login.png)
+![Login Page](./public/login.PNG)
 
 ## Register Page
-![Register Page](./public/screenshots/register.jpg)
+![Register Page](./public/register.JPG)
 
 ## Dashboard
-![Dashboard](./public/screenshots/dashboard.png)
+![Dashboard](./public/dashboard.PNG)
 
 
 # Running the Project
